@@ -4,7 +4,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,26 +38,13 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("api/v1/filter")
 @Api("Set of endpoints for select operations.")
+@AllArgsConstructor
 public class FilterRestController {
 
     private UserService userService;
-
     private ArticleService articleService;
-
     private UserFilterSettings userFilterSettings;
-
     private ArticleFilterSettings articleFilterSettings;
-
-    @Autowired
-    public FilterRestController(UserService userService,
-                                ArticleService articleService,
-                                UserFilterSettings userFilterSettings,
-                                ArticleFilterSettings articleFilterSettings) {
-        this.userService = userService;
-        this.articleService = articleService;
-        this.userFilterSettings = userFilterSettings;
-        this.articleFilterSettings = articleFilterSettings;
-    }
 
     @GetMapping("users")
     @ApiOperation("Return list of Users, selected by some conditions. DON'T TEST! HAS ERRORS!")
@@ -81,73 +68,9 @@ public class FilterRestController {
     /**
      * Метод возвращает список статей в соответствии с заданными фильтрами
      *
-     * @param request                           - HttpServletRequest запрос
-     * @param response                          - HttpServletResponse ответ
-//     * @param page_number                       - Integer, номер страницы, отсчет с 1. Значение по умолчанию 1.
-//     * @param page_size                         - Integer, количество элементов на странице, значение по умолчанию = 20
-//     * @param order_direction                   - String, направление сортировки, возможные значения ASC и DESC. Значение по умолчанию ASC. регистронезависимые
-//     * @param order_by_properties               - String, через запятую перечисляются поля класса Article (с типом не List) для сортировки
-//     * @param id                                - Long, id статьи, полe, поиск на точное соответствие
-//     * @param author_id                         - Long, id пользователя {@link ru.travelmatch.base.entities.User}, связанная сущность ManyToOne,
-//     *                                          поиск на точное соответствие
-//     * @param category_id                       - Long, id категории статьи {@link ru.travelmatch.base.entities.ArticleCategory},
-//     *                                          связанная сущность ManyToOne, поиск на точное соответствие
-//     * @param city_id                           - Long, id города {@link ru.travelmatch.base.entities.City}, связанная сущность ManyToOne,
-    //     *                                          поиск на точное соответствие
-    //     * @param language_id                       - Long, id языка народ мира {@link ru.travelmatch.base.entities.Language}, связанная сущность
-    //     *                                          ManyToOne, поиск на точное соответствие
-    //     * @param text                              - String, text, поле, регистронезависимый поиск по вхождению фразы в текст статьи
-    //     * @param title_equal                       - String, title, поле, регистронезависимый поиск на точное соответствие заголовка статьи
-    //     * @param title_contains                    - String, title, поле, регистронезависимый поиск на вхождение фразы в заголовок статьи
-    //     * @param created_equal                     - LocalDateTime, created, поле, поиск на точное соответствие по дате создания статьи (н-р, 2020-03-03T00:00:00)
-    //     * @param created_before                    - LocalDateTime, created, поле, поиск статей, созданных раньше или точно в эту же дату (н-р, 2020-03-03T00:00:00)
-    //     * @param created_after                     - LocalDateTime, created, поле, поиск статей, созданных после или точно в эту же дату (н-р, 2020-03-03T00:00:00)
-    //     * @param updated_equal                     - LocalDateTime, lastUpdated, поле, поиск на точное соответствие по дате последнего обновления статьи статьи (н-р, 2020-03-03T00:00:00)
-    //     * @param updated_before                    - LocalDateTime, lastUpdated, поле, поиск статей, дате последнего обновления которых раньше или точно в эту же дату (н-р, 2020-03-03T00:00:00)
-    //     * @param updated_after                     - LocalDateTime, lastUpdated, поле, поиск статей, дате последнего обновления после или точно в эту же дату (н-р, 2020-03-03T00:00:00)
-    //     * @param likes_equal                       - Long, количество лайков на точное равенство, вычисляется по полю likeDislike = 1 из таблицы
-    //     *                                          лайков и рейтингов {@link ru.travelmatch.base.entities.ArticleLikeRating}, связанная сущность OneToMany
-    //     * @param likes_greaterOrEqual              - Long, количество лайков, большее либо равное указанному значению,
-    //     *                                          вычисляется как количество строк, где likeDislike = 1 из таблицы лайков и рейтингов
-    //     *                                          {@link ru.travelmatch.base.entities.ArticleLikeRating}, связанная сущность OneToMany
-    //     * @param likes_lessOrEqual                 - Long, количество лайков, меньшее либо равное указанному значению,
-    //     *                                          вычисляется как количество строк, где likeDislike = 1 из таблицы лайков и рейтингов
-    //     *                                          {@link ru.travelmatch.base.entities.ArticleLikeRating}, связанная сущность OneToMany
-    //     * @param dislikes_equal                    - Long, количество дизлайков на точное равенство, вычисляется как количество строк,
-    //     *                                          где likeDislike = -1 из таблицы лайков и рейтингов
-//     *                                          {@link ru.travelmatch.base.entities.ArticleLikeRating}, связанная сущность OneToMany
-//     * @param dislikes_greaterOrEqual           - Long, количество дизлайков, большее либо равное указанному значению,
-//     *                                          вычисляется как количество строк, где likeDislike = -1 из таблицы лайков и рейтингов
-//     *                                          {@link ru.travelmatch.base.entities.ArticleLikeRating}, связанная сущность OneToMany
-//     * @param dislikes_lessOrEqual              - Long, количество дизлайков, меньшее либо равное указанному значению,
-//     *                                          вычисляется как количество строк, где likeDislike = -1 из таблицы лайков и рейтингов
-//     *                                          {@link ru.travelmatch.base.entities.ArticleLikeRating}, связанная сущность OneToMany
-//     * @param rating_value_count_equal          - Long, количество полученных оценок, отличных от 0 и null, на точное равенство,
-//     *                                          вычисляется как количество строк, где rating не null и не 0, из таблицы лайков и рейтингов
-//     *                                          {@link ru.travelmatch.base.entities.ArticleLikeRating}, связанная сущность OneToMany
-//     * @param rating_value_count_greaterOrEqual - Long, количество полученных оценок, отличных от 0 и null, большее либо равное указанному
-//     *                                          значению, вычисляется как количество строк, где rating не null и не 0, из таблицы лайков
-//     *                                          и рейтингов {@link ru.travelmatch.base.entities.ArticleLikeRating},
-//     *                                          связанная сущность OneToMany
-//     * @param rating_value_count_lessOrEqual    - Long, количество полученных оценок, отличных от 0 и null, меньшее либо равное указанному
-//     *                                          значению, вычисляется как количество строк, где rating не null и не 0, из таблицы лайков
-//     *                                          и рейтингов {@link ru.travelmatch.base.entities.ArticleLikeRating},
-//     *                                          связанная сущность OneToMany
-//     * @param rating_equal                      - Long, средняя оценка на точное соответствие,
-//     *                                          вычисляется как среднее по полю rating из таблицы лайков и рейтингов
-//     *                                          {@link ru.travelmatch.base.entities.ArticleLikeRating},связанная сущность OneToMany.
-//     *                                          В расчет принимаются только значения, отличные от null и 0.
-//     * @param rating_greaterOrEqual             - Long, средняя оценка на точное соответствие,
-//     *                                          вычисляется как среднее по полю rating из таблицы лайков и рейтингов
-//     *                                          {@link ru.travelmatch.base.entities.ArticleLikeRating},связанная сущность OneToMany.
-//     *                                          В расчет принимаются только значения, отличные от null и 0.
-//     * @param rating_lessOrEqual                - Long, средняя оценка, меньшая либо равная указанному значению,
-//     *                                          вычисляется как среднее по полю rating из таблицы лайков и рейтингов
-//     *                                          {@link ru.travelmatch.base.entities.ArticleLikeRating},связанная сущность OneToMany.
-//     *                                          В расчет принимаются только значения, отличные от null и 0.
-//     * @param tags_id                           - String, список id тегов {@link ru.travelmatch.base.entities.Tag}, которые должны быть подвязаны к статье.
-     *                                          Причем в отбор должны попадать лишь те статьи, к которым подвязан весь список тегов.
-     * @return
+     * @param request           - HttpServletRequest запрос
+     * @param response          - HttpServletResponse ответ
+     * @return ResponseEntity   - статус с телом ответа
      */
     @GetMapping("articles")
     @ApiOperation("Return list of Articles, selected by some conditions")
